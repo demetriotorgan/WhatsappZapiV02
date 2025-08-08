@@ -48,18 +48,14 @@ router.get('/mensagens', async(req,res)=>{
 
 //-----------WebHook---------------
 router.post('/webhook', async(req,res)=>{
-    console.log('Webhook recebido:', JSON.stringify(req.body, null, 2));
+    
     try {
-        const {phone, text, senderName, chatName} = req.body
-        if (!phone || !text?.message) {
-        return res.status(400).json({ sucesso: false, erro: 'Dados incompletos' });
-    }
+        console.log('Webhook recebido:', JSON.stringify(req.body, null, 2));
+
     //salvando no mongodb
     await MensagemRecebida.create({
-        phone,
-        senderName,
-        chatName,
-        message: text.message,
+        rawPayload: JSON.stringify(req.body),
+        receivedAt: new Date()
     });
         res.sendStatus(200);
     } catch (err) {
