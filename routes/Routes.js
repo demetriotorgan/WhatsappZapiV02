@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const Mensagem = require('../models/Mensagem');
 const MensagemRecebida = require('../models/MensagemRecebida');
+require('dotenv').config();
 
 const router = express.Router();
 
@@ -17,20 +18,21 @@ router.post('/enviar', async(req,res)=>{
                 },
                 {
                     headers:{
-                         'Client-Token': 'Fe1ba10d43aaf4c93a4f68a2fd23fcc8eS'
+                         'Client-Token': process.env.ZAPI_CLIENT_TOKEN
                     }
                 });
                 //Salva no MongoDB
                 console.log('Resposta da Z-API:', response.data);
+                //Salva no MongoDB
                 await Mensagem.create({phone,message});
                 res.status(200).json({sucesso:true, mensagem:'Mensagem enviada com sucesso!'});
     } catch (error) {
-        if(err.response){
-            console.error('Erro da Z-API:', err.response.data);
+        if(error.response){
+            console.error('Erro da Z-API:', error.response.data);
         }else{
-            console.error('Erro desconhecido:', err.message);
+            console.error('Erro desconhecido:', error.message);
         }        
-        res.status(500).json({sucesso:false, erro:'Erro ao enviar mensagem'});
+        res.status(500).json({sucesso:false, error:'Erro ao enviar mensagem'});
     }
 });
 
