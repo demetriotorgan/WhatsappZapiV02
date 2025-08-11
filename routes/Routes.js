@@ -3,6 +3,7 @@ const axios = require('axios');
 const Mensagem = require('../models/Mensagem');
 const MensagemRecebida = require('../models/MensagemRecebida');
 const Imagem = require('../models/Imagem');
+const StatusMensagemModel = require('../models/StatusMensagem');
 
 require('dotenv').config();
 
@@ -24,7 +25,11 @@ router.post('/enviar', async(req,res)=>{
                     }
                 });
                 //Salva no MongoDB
-                console.log('Resposta da Z-API:', response.data);
+                // console.log('Status:', response.status);
+                // console.log('---------------------------');
+                // console.log('Headers:', response.headers);
+                console.log('Data:', response.data);
+                // console.log('Resposta completa', response);
                 //Salva no MongoDB
                 await Mensagem.create({phone,message});
                 res.status(200).json({sucesso:true, mensagem:'Mensagem enviada com sucesso!'});
@@ -119,6 +124,58 @@ router.delete('/limpar-mensagens', async(req, res)=>{
         res.status(500).json({message:'Erro ao limpar mensagens'});
     }
 });
+
+//---------Web Hook Status
+router.post('/instancia/:instancia/status', async(req,res)=>{
+    try {
+        const {instancia} = req.params;
+        const {messageId, status, phone} = req.body;
+
+        console.log(`Status recebido da instancia ${instancia}`);
+        console.log(req.body);
+
+        //Salvar no bando de dados
+        const statusMensagem = await StatusMensagemModel.create({
+            messageId,
+            status,
+            phone,
+        });
+        console.log('Status salvo com sucesso no MongoDB:', statusMensagem);
+        res.status(200).json({success: true, message:'Status recebido com sucesso'});
+    } catch (error) {
+        console.error('Erro ao processar status: ', error);
+        res.status(500).json({success:false, error:'Erro interno'});
+    }
+});
+
+router.post('/configurar-webhook-status', async(req,res)=>{
+    try {
+        const {instancia, token} = req.body;
+
+        //Minha Rota Publica;
+        const urlDestino = `https://whatsapp-zapi-v01.vercel.app/instancia/${instancia}/status`;
+
+        //Enviando para a Z-API
+        const resposta = await axios.put(
+            `https://api.z-api.io/instances/${instancia}/token/${token}/update-webhook-message-status`,
+            {value: urlDestino},
+            {headers:{
+                "Content-Type": "application/json",
+                 "Client-Token": process.env.ZAPI_CLIENT_TOKEN
+                }
+            }
+        );
+        res.status(200).json({
+            success: true,
+            message: "Webhook configurado com sucesso",
+            resposta: resposta.data
+        });
+    } catch (error) {
+        console.error("❌ Erro ao configurar webhook:", error.response?.data || error.message);
+        res.status(500).json({success: false, error: "Erro ao configurar webhook"});
+    }
+});
+
 
 module.exports = router;
 
