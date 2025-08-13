@@ -176,6 +176,16 @@ router.post('/configurar-webhook-status', async(req,res)=>{
     }
 });
 
+//-------------Receber Status do Banco de Dados
+router.get('/status', async(req,res)=>{
+    try {
+        const statusMensagens = await StatusMensagemModel.find().exec();
+        res.status(200).json(statusMensagens);
+    } catch (error) {
+        console.error('Erro ao buscar status: ', error);
+        res.status(500).json({success:false, erro:'Erro interno'});
+    }
+});
 
 module.exports = router;
 
