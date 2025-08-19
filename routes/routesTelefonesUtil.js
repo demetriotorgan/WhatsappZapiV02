@@ -41,9 +41,14 @@ router.get('/listar-telefones', async(req,res)=>{
 });
 
 //Deleta lista de telefones
-router.delete('/telefones', (req, res)=>{
-    salvarTelefones([]);
-    res.json({sucesso:true, mensagem:'Lista de telefone limpa com sucesso'});
+router.delete('/telefones', async(req, res)=>{
+    try {
+        await Telefones.deleteMany({}); //remove todos os documentos
+        res.json({sucesso:true, mensagem:'Lista de telefones limpa com sucesso'});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({erro:'Erro ao limpar lista de telefones'});
+    }
 });
 
 //Deleta um telefone da lista
