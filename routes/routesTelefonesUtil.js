@@ -1,41 +1,32 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const Telefones = require('../models/Telefones');
 
 require('dotenv').config();
 
 const router = express.Router();
 
-//Funções Salvar e Ler Lista de Telefones e Status
-const publicDir = path.join(process.cwd(), 'public');
-const filePathTelefones = path.join(publicDir, 'telefones.json');
-
-function lerTelefones(){
-    return JSON.parse(fs.readFileSync(filePathTelefones, 'utf-8'));
-}
-
-function salvarTelefones(lista){
-    fs.writeFileSync(filePathTelefones, JSON.stringify(lista, null,2));
-}
-
 //Salva telefone na lista
-router.post('/telefones', (req,res)=>{
- const { phone } = req.body;
-    if (!phone) {
-        return res.status(400).json({ erro: 'O campo phone é obrigatório' });
-    }
+router.post('/telefones', async(req,res)=>{
+    try {
+       const { phone } = req.body;
+       if (!phone) {
+        return res.status(400).json({ erro: 'O campo phone é obrigatório' });   
+       }
 
-    let lista = lerTelefones();
+       //Verifica Duplicata
+       const existente = await Telefones.findOne({phone});
+       if(existente){
+        return res.status(400).json({erro:'O telefone já existe na lista'});
+       }
 
-    // Evita duplicatas
-    if (lista.find(t => t.phone === phone)) {
-        return res.status(400).json({ erro: 'Telefone já existe na lista' });
-    }
-
-    lista.push({ phone, status: 'não-enviado' });
-    salvarTelefones(lista);
-
-    res.json({ sucesso: true, mensagem: 'Telefone adicionado com sucesso' });
+       //Criar um novo registro
+       const novoTelefone = new Telefones({phone});
+       await novoTelefone.save();
+       res.json({sucesso: true, mensagem:'Telefone adicionado com sucesso'});
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({erro:'Erro ao salvar telefone'});
+    }        
 });
 
 //Exibi Lista telefones completa
