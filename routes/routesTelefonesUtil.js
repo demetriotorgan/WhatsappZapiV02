@@ -52,24 +52,22 @@ router.delete('/telefones', async(req, res)=>{
 });
 
 //Deleta um telefone da lista
-router.delete('/telefones/:phone', (req, res)=>{
-    const {phone} = req.params;
-    if (!phone) {
-        return res.status(400).json({ erro: 'Número de telefone é obrigatório' });
+router.delete('/telefones/:phone', async(req, res)=>{
+    try {
+        const {phone} = req.params;
+        if(!phone){
+            return res.status(400).json({erro:'Informe o número de telefone'});
+        }
+        const telefoneRemovido = await Telefones.findOneAndDelete({phone});
+        if(!telefoneRemovido){
+            return res.status(404).json({erro:'Telefone não encontrado na lista'});
+        }
+        res.json({sucesso:true, mensagem:`Telefone ${phone} removido com sucesso`});
+
+    } catch (error) {
+        console.error(err);
+        res.status(500).json({erro:'Erro ao remover Telefone'});
     }
-
-    let lista = lerTelefones();
-    const index = lista.findIndex(t => t.phone === phone);
-
-    if (index === -1) {
-        return res.status(404).json({ erro: 'Telefone não encontrado na lista' });
-    }
-
-    // Remove o telefone da lista
-    lista.splice(index, 1);
-    salvarTelefones(lista);
-
-    res.json({ sucesso: true, mensagem: `Telefone ${phone} removido com sucesso` });
 });
 
 
