@@ -35,7 +35,7 @@ router.post('/configurar-webhook-status', async(req,res)=>{
         const {instancia, token} = req.body;
 
         //Minha Rota Publica;
-        const urlDestino = `https://whatsapp-zapi-v01.vercel.app/instancia/${instancia}/status`;
+        const urlDestino = `https://whatsapp-zapi-v02.vercel.app/instancia/${instancia}/status`;
 
         //Enviando para a Z-API
         const resposta = await axios.put(
