@@ -125,7 +125,7 @@ router.put('/telefones/status', async(req,res)=>{
             mensagem:'Status atualizadoa com sucesso',
             telefone:telefoneAtualizado
         });
-    } catch (error) {
+    } catch (err) {
         console.error(err);
         res.status(500).json({erro:'Erro ao atualizar status'});
     }
