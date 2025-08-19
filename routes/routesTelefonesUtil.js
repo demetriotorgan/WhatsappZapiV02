@@ -72,35 +72,37 @@ router.delete('/telefones/:phone', async(req, res)=>{
 
 
 //Carrega lista de telefones completa
-router.post('/telefones/lote', (req, res) => {
-    const { telefones } = req.body;
-
-    if (!Array.isArray(telefones) || telefones.length === 0) {
-        return res.status(400).json({ erro: 'O campo "telefones" deve ser um array não vazio' });
-    }
-
-    let lista = lerTelefones();
-    let adicionados = [];
-    let duplicados = [];
-
-    telefones.forEach(phone => {
-        // Evita duplicatas
-        if (!lista.find(t => t.phone === phone)) {
-            lista.push({ phone, status: 'não-enviado' });
-            adicionados.push(phone);
-        } else {
-            duplicados.push(phone);
+router.post('/telefones/lote', async(req, res) => {
+    try {
+        const {telefones} = req.body;
+        if(!Array.isArray(telefones) || telefones.length === 0){
+            return res.status(400).json({erro:'O campo telefones deve ser um array não vazio'});
         }
-    });
 
-    salvarTelefones(lista);
+        let adicionados = [];
+        let duplicados = [];
 
-    res.json({
-        sucesso: true,
-        mensagem: 'Processamento concluído',
-        adicionados,
-        duplicados
-    });
+        for(const phone of telefones){
+            //Verifica se já existe no banco
+            const existente = await Telefones.findOne({phone});
+            if(existente){
+                duplicados.push(phone);
+            }else{
+                const novo = new Telefones({phone});
+                await novo.save();
+                adicionados.push(phone);
+            }
+        }
+        res.json({
+            sucesso:true,
+            mensagem:'Processamento concluído',
+            adicionados,
+            duplicados
+        });
+    } catch (error) {
+        console.error(err);
+        res.status(500).json({ erro: "Erro ao salvar lista de telefones" });
+    }
 });
 
 //Atualiza status
