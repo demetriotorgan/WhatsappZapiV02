@@ -112,7 +112,7 @@ router.put('/telefones/status', async(req,res)=>{
         if(!phone || !status){
             return res.status(400).json({erro:'Campos phone e status são obrigatórios'});
         }
-        const telefoneAtualizado = await Telefones.findByIdAndUpdate(
+        const telefoneAtualizado = await Telefones.findOneAndUpdate(
             {phone},
             {status},
             {new: true} // retorna documento atual
