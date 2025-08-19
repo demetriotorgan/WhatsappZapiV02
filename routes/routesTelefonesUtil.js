@@ -30,9 +30,14 @@ router.post('/telefones', async(req,res)=>{
 });
 
 //Exibi Lista telefones completa
-router.get('/listar-telefones', (req,res)=>{
-    const lista = lerTelefones();
-    res.json(lista);
+router.get('/listar-telefones', async(req,res)=>{
+    try {
+        const lista = await Telefones.find(); //busca todos os telefones
+        res.json(lista);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({erro:'Erro ao buscar lista de telefones'});
+    }
 });
 
 //Deleta lista de telefones
