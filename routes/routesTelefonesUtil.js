@@ -106,23 +106,29 @@ router.post('/telefones/lote', async(req, res) => {
 });
 
 //Atualiza status
-router.put('/telefones/status', (req,res)=>{
-    const { phone, status } = req.body;
-    if (!phone || !status) {
-        return res.status(400).json({ erro: 'Campos phone e status são obrigatórios' });
+router.put('/telefones/status', async(req,res)=>{
+    try {
+        const {phone, status} = req.body;
+        if(!phone || !status){
+            return res.status(400).json({erro:'Campos phone e status são obrigatórios'});
+        }
+        const telefoneAtualizado = await Telefones.findByIdAndUpdate(
+            {phone},
+            {status},
+            {new: true} // retorna documento atual
+        );
+        if(!telefoneAtualizado){
+            return res.status(404).json({erro:'Telefone não encontrado'});
+        }
+        res.json({
+            sucesso:true,
+            mensagem:'Status atualizadoa com sucesso',
+            telefone:telefoneAtualizado
+        });
+    } catch (error) {
+        console.error(err);
+        res.status(500).json({erro:'Erro ao atualizar status'});
     }
-
-    let lista = lerTelefones();
-    const index = lista.findIndex(t => t.phone === phone);
-
-    if (index === -1) {
-        return res.status(404).json({ erro: 'Telefone não encontrado' });
-    }
-
-    lista[index].status = status;
-    salvarTelefones(lista);
-
-    res.json({ sucesso: true, mensagem: 'Status atualizado com sucesso' });
 });
 
 module.exports = router;
