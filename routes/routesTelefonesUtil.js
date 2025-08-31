@@ -155,4 +155,15 @@ router.post('/salvar-lista-telefone', async(req,res)=>{
     }
 });
 
+//Exibi listas JSON salvas
+router.get('/lista-telefones-salva', async(req, res)=>{
+    try {
+        const listaSalva  = await ListaTelefoneJSON.find();
+        res.json(listaSalva);
+    } catch (err) {  
+        console.error(err);
+        res.status(500).json({erro:'Erro ao listar telefones salvos'});
+    }    
+});
+
 module.exports = router;
