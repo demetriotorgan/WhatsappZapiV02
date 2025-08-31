@@ -83,4 +83,45 @@ router.put('/atualizar-campanha/:id', async(req, res)=>{
     }
 });
 
+router.post('/atualizar-meta/:id', async(req,res)=>{
+try {
+    const {id} = req.params;
+
+    const novoImpulsionamento = {
+        data: req.body.data,
+        urlImagem: req.body.urlImagem,
+        mensagemEnviada: req.body.mensagemEnviada,
+        contato:req.body.contato,
+        telefoneContato:req.body.telefoneContato,
+        enviados: req.body.enviados,
+        tempoEnvio: req.body.tempoEnvio,
+        metaSelecionada: req.body.metaSelecionada
+     };
+
+     const campanhaAtualizada = await CadastroCampanha.findOneAndUpdate(
+        { id_campanha: id },
+        { $push: { Impulsionamento: novoImpulsionamento } },
+        { new: true } // retorna o documento atualizado
+     );
+     if (!campanhaAtualizada) {
+      return res.status(404).json({ message: 'Campanha não encontrada' });
+    }
+
+    // Pega o último impulsionamento (o que acabou de ser adicionado)
+    const impulsionamentoAdicionado = campanhaAtualizada.Impulsionamento.slice(-1)[0];
+
+    res.status(201).json({
+      message: 'Impulsionamento adicionado com sucesso',
+      impulsionamento: impulsionamentoAdicionado
+    });
+
+} catch (error) {
+    console.error('Erro ao adicionar impulsionamento:', error);
+    res.status(500).json({
+      message: 'Erro ao salvar impulsionamento',
+      erro: error.message
+    });
+    }
+})
+
 module.exports = router;
