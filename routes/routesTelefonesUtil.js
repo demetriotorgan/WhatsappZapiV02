@@ -1,5 +1,6 @@
 const express = require('express');
 const Telefones = require('../models/Telefones');
+const ListaTelefoneJSON = require('../models/ListaTelefoneJSON');
 
 require('dotenv').config();
 
@@ -128,6 +129,29 @@ router.put('/telefones/status', async(req,res)=>{
     } catch (err) {
         console.error(err);
         res.status(500).json({erro:'Erro ao atualizar status'});
+    }
+});
+
+//Rota para salvar lista json de Telefones
+router.post('/salvar-lista-telefone', async(req,res)=>{
+    try {
+        const {nome, telefones} = req.body;
+        if (!Array.isArray(telefones) || telefones.length === 0 || !nome){
+            return res.status(400).json({erro:'Lista de telefone inválida'});
+        }
+        //Cria e salva a lista completa
+        const novaLista = new ListaTelefoneJSON({nome, telefones});
+        await novaLista.save();
+
+        res.json({
+            sucesso:true,
+            mensagem:'Lista salva com sucesso',
+            lista: novaLista
+        });
+        
+    } catch (error) {
+        console.error('Erro ao salvar lista', error);
+        res.status(500).json({erro:'Erro ao salvar lista de telefones'});
     }
 });
 
