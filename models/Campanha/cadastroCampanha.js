@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require ('mongoose');
 
 const ImpulsionamentoSchema = new mongoose.Schema({
     data:Date,
